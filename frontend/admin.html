@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Админ панель — Парковка</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0A0A0F;
+    color: #fff;
+    font-family: -apple-system, 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+  }
+
+  .sidebar {
+    width: 240px;
+    background: rgba(255,255,255,0.03);
+    border-right: 1px solid rgba(255,255,255,0.06);
+    padding: 32px 20px;
+    flex-shrink: 0;
+  }
+
+  .logo { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .logo-sub { font-size: 12px; color: #444; margin-bottom: 40px; }
+
+  .nav-item {
+    padding: 12px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 4px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+  .nav-item.active { background: rgba(59,130,246,0.15); color: #3B82F6; }
+
+  .content { flex: 1; padding: 40px; overflow-y: auto; }
+
+  h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .date-label { color: #444; font-size: 14px; margin-bottom: 32px; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  .stat-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 20px;
+    padding: 24px;
+  }
+
+  .stat-icon { font-size: 28px; margin-bottom: 16px; }
+  .stat-value { font-size: 40px; font-weight: 800; margin-bottom: 4px; }
+  .stat-label { font-size: 13px; color: #555; }
+
+  .stat-card.blue .stat-value { color: #3B82F6; }
+  .stat-card.green .stat-value { color: #10B981; }
+  .stat-card.purple .stat-value { color: #8B5CF6; }
+  .stat-card.orange .stat-value { color: #F59E0B; }
+
+  .section {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .section-title { font-size: 16px; font-weight: 600; }
+
+  .badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .badge-green { background: rgba(16,185,129,0.15); color: #10B981; }
+  .badge-blue { background: rgba(59,130,246,0.15); color: #3B82F6; }
+  .badge-yellow { background: rgba(245,158,11,0.15); color: #F59E0B; }
+  .badge-red { background: rgba(239,68,68,0.15); color: #EF4444; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    font-size: 12px;
+    color: #444;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  td {
+    padding: 14px 12px;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    color: #ccc;
+  }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .plate-cell { font-weight: 700; color: #fff; letter-spacing: 0.08em; font-size: 15px; }
+
+  .revenue-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .revenue-card {
+    padding: 20px;
+    border-radius: 16px;
+    text-align: center;
+  }
+
+  .revenue-card.electronic {
+    background: rgba(59,130,246,0.1);
+    border: 1px solid rgba(59,130,246,0.2);
+  }
+
+  .revenue-card.cash {
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.2);
+  }
+
+  .revenue-amount { font-size: 36px; font-weight: 800; margin-bottom: 4px; }
+  .revenue-card.electronic .revenue-amount { color: #3B82F6; }
+  .revenue-card.cash .revenue-amount { color: #10B981; }
+  .revenue-label { font-size: 13px; color: #555; }
+  .revenue-count { font-size: 12px; color: #444; margin-top: 4px; }
+
+  .tab-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .tab {
+    padding: 8px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    color: #555;
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: all 0.2s;
+  }
+
+  .tab.active { background: rgba(59,130,246,0.15); color: #3B82F6; border-color: rgba(59,130,246,0.3); }
+
+  .active-dot {
+    width: 8px; height: 8px;
+    background: #10B981;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+    animation: blink 1.5s infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">🅿️ Парковка</div>
+  <div class="logo-sub">Панель управления</div>
+
+  <div class="nav-item active" onclick="showTab('dashboard')">📊 Дашборд</div>
+  <div class="nav-item" onclick="showTab('sessions')">📋 Журнал</div>
+  <div class="nav-item" onclick="showTab('active')">🚗 Внутри сейчас</div>
+  <div class="nav-item" onclick="showTab('abonement')">🎫 Абонементы</div>
+  <div class="nav-item" onclick="showTab('blacklist')">🚫 Черный список</div>
+</div>
+
+<div class="content">
+
+  <!-- DASHBOARD -->
+  <div id="tab-dashboard">
+    <h1>Дашборд</h1>
+    <div class="date-label" id="currentDate"></div>
+
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <div class="stat-icon">🚗</div>
+        <div class="stat-value" id="totalToday">—</div>
+        <div class="stat-label">Машин сегодня</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">💰</div>
+        <div class="stat-value" id="revenueTotal">—</div>
+        <div class="stat-label">Выручка (сомони)</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-icon"><span class="active-dot"></span>Внутри</div>
+        <div class="stat-value" id="insideNow">—</div>
+        <div class="stat-label">Сейчас на парковке</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-icon">📱</div>
+        <div class="stat-value" id="electronicCount">—</div>
+        <div class="stat-label">Безналичных</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">Выручка по способу оплаты</span>
+      </div>
+      <div class="revenue-split">
+        <div class="revenue-card electronic">
+          <div class="revenue-amount" id="revenueElectronic">—</div>
+          <div class="revenue-label">💳 Безналичные (Alif)</div>
+          <div class="revenue-count" id="electronicCountSub"></div>
+        </div>
+        <div class="revenue-card cash">
+          <div class="revenue-amount" id="revenueCash">—</div>
+          <div class="revenue-label">💵 Наличные (охранник)</div>
+          <div class="revenue-count" id="cashCountSub"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SESSIONS -->
+  <div id="tab-sessions" style="display:none">
+    <h1>Журнал въездов/выездов</h1>
+    <p class="date-label">Последние 100 записей</p>
+    <div class="section" style="padding:0; overflow:hidden;">
+      <table>
+        <thead>
+          <tr>
+            <th>Номер</th>
+            <th>Въезд</th>
+            <th>Выезд</th>
+            <th>Способ</th>
+            <th>Оплата</th>
+            <th>Сумма</th>
+          </tr>
+        </thead>
+        <tbody id="sessionsTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ACTIVE -->
+  <div id="tab-active" style="display:none">
+    <h1>Машины внутри сейчас</h1>
+    <p class="date-label" id="activeCount"></p>
+    <div class="section" style="padding:0; overflow:hidden;">
+      <table>
+        <thead>
+          <tr>
+            <th>Номер</th>
+            <th>Въехал</th>
+            <th>Время на парковке</th>
+          </tr>
+        </thead>
+        <tbody id="activeTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ABONEMENT -->
+  <div id="tab-abonement" style="display:none">
+    <h1>Абонементы</h1>
+    <p class="date-label">Постоянные клиенты — въезд/выезд бесплатно</p>
+    <div class="section">
+      <div class="section-title" style="margin-bottom:16px">Добавить абонемент</div>
+      <input type="text" id="ab-plate" placeholder="Номер авто" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;color:#fff;font-size:16px;width:200px;margin-right:8px;outline:none;">
+      <input type="text" id="ab-name" placeholder="Имя владельца" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;color:#fff;font-size:16px;width:200px;margin-right:8px;outline:none;">
+      <input type="number" id="ab-days" placeholder="Дней" value="30" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;color:#fff;font-size:16px;width:100px;margin-right:8px;outline:none;">
+      <button onclick="addAbonement()" style="background:linear-gradient(135deg,#3B82F6,#2563EB);border:none;border-radius:10px;padding:12px 20px;color:#fff;font-weight:600;cursor:pointer;">Добавить</button>
+    </div>
+  </div>
+
+  <!-- BLACKLIST -->
+  <div id="tab-blacklist" style="display:none">
+    <h1>Чёрный список</h1>
+    <p class="date-label">Заблокированные номера — шлагбаум не откроется</p>
+    <div class="section">
+      <div class="section-title" style="margin-bottom:16px">Заблокировать номер</div>
+      <input type="text" id="bl-plate" placeholder="Номер авто" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;color:#fff;font-size:16px;width:200px;margin-right:8px;outline:none;">
+      <input type="text" id="bl-reason" placeholder="Причина" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;color:#fff;font-size:16px;width:300px;margin-right:8px;outline:none;">
+      <button onclick="addBlacklist()" style="background:linear-gradient(135deg,#EF4444,#DC2626);border:none;border-radius:10px;padding:12px 20px;color:#fff;font-weight:600;cursor:pointer;">Заблокировать</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function showTab(name) {
+  document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
+  document.getElementById(`tab-${name}`).style.display = 'block';
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  event.target.classList.add('active');
+
+  if (name === 'sessions') loadSessions();
+  if (name === 'active') loadActive();
+  if (name === 'dashboard') loadStats();
+}
+
+async function loadStats() {
+  try {
+    const r = await fetch('/api/admin/stats');
+    const d = await r.json();
+    document.getElementById('totalToday').textContent = d.total_today;
+    document.getElementById('revenueTotal').textContent = d.revenue_total;
+    document.getElementById('insideNow').textContent = d.currently_inside;
+    document.getElementById('electronicCount').textContent = d.paid_electronic;
+    document.getElementById('revenueElectronic').textContent = `${d.revenue_electronic} с`;
+    document.getElementById('revenueCash').textContent = `${d.revenue_cash} с`;
+    document.getElementById('electronicCountSub').textContent = `${d.paid_electronic} оплат`;
+    document.getElementById('cashCountSub').textContent = `${d.paid_cash} оплат`;
+  } catch(e) {}
+}
+
+async function loadSessions() {
+  try {
+    const r = await fetch('/api/admin/sessions');
+    const sessions = await r.json();
+    const tbody = document.getElementById('sessionsTable');
+    tbody.innerHTML = sessions.map(s => {
+      const statusBadge = s.payment_status === 'paid'
+        ? `<span class="badge badge-green">Оплачено</span>`
+        : s.payment_status === 'free'
+        ? `<span class="badge badge-blue">Абонемент</span>`
+        : `<span class="badge badge-yellow">Ожидание</span>`;
+
+      const typeBadge = s.exit_type === 'manual'
+        ? `<span class="badge badge-green">Наличные</span>`
+        : s.exit_type === 'auto'
+        ? `<span class="badge badge-blue">Alif</span>`
+        : `<span class="badge" style="color:#444">—</span>`;
+
+      return `<tr>
+        <td class="plate-cell">${s.plate || '—'}</td>
+        <td>${s.entry_time ? new Date(s.entry_time).toLocaleString('ru') : '—'}</td>
+        <td>${s.exit_time ? new Date(s.exit_time).toLocaleString('ru') : s.is_active ? '<span style="color:#10B981">Внутри</span>' : '—'}</td>
+        <td>${typeBadge}</td>
+        <td>${statusBadge}</td>
+        <td>${s.amount ? `${s.amount} с` : '—'}</td>
+      </tr>`;
+    }).join('');
+  } catch(e) {}
+}
+
+async function loadActive() {
+  try {
+    const r = await fetch('/api/admin/active');
+    const sessions = await r.json();
+    document.getElementById('activeCount').textContent = `${sessions.length} машин сейчас на парковке`;
+    const tbody = document.getElementById('activeTable');
+    tbody.innerHTML = sessions.map(s => `
+      <tr>
+        <td class="plate-cell">${s.plate || '—'}</td>
+        <td>${new Date(s.entry_time).toLocaleString('ru')}</td>
+        <td>${s.duration_minutes} мин</td>
+      </tr>
+    `).join('');
+  } catch(e) {}
+}
+
+async function addAbonement() {
+  const plate = document.getElementById('ab-plate').value.toUpperCase();
+  const name = document.getElementById('ab-name').value;
+  const days = parseInt(document.getElementById('ab-days').value);
+  if (!plate) return alert('Введите номер авто');
+  await fetch('/api/admin/abonement', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ plate, owner_name: name, days })
+  });
+  alert(`Абонемент добавлен для ${plate} на ${days} дней`);
+}
+
+async function addBlacklist() {
+  const plate = document.getElementById('bl-plate').value.toUpperCase();
+  const reason = document.getElementById('bl-reason').value;
+  if (!plate) return alert('Введите номер авто');
+  await fetch('/api/admin/blacklist', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ plate, reason })
+  });
+  alert(`${plate} добавлен в чёрный список`);
+}
+
+document.getElementById('currentDate').textContent = new Date().toLocaleDateString('ru', {
+  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+});
+
+loadStats();
+setInterval(loadStats, 15000);
+</script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Парковка — Оплата</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0A0A0F;
+    color: #fff;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', sans-serif;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+  }
+
+  .screen {
+    text-align: center;
+    z-index: 1;
+    padding: 40px;
+    transition: all 0.5s ease;
+  }
+
+  /* IDLE SCREEN */
+  .idle-screen .logo {
+    font-size: 72px;
+    margin-bottom: 20px;
+  }
+
+  .idle-screen h1 {
+    font-size: 48px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #fff 0%, #888 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+  }
+
+  .idle-screen p {
+    font-size: 22px;
+    color: #555;
+    letter-spacing: 0.05em;
+  }
+
+  .pulse-ring {
+    width: 120px;
+    height: 120px;
+    border: 2px solid rgba(59, 130, 246, 0.3);
+    border-radius: 50%;
+    margin: 30px auto;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.3; }
+    50% { transform: scale(1.2); opacity: 0.8; }
+  }
+
+  /* PAYMENT SCREEN */
+  .payment-screen { display: none; }
+
+  .payment-screen .plate {
+    font-size: 56px;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    color: #fff;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 16px 40px;
+    border-radius: 16px;
+    display: inline-block;
+    margin-bottom: 32px;
+  }
+
+  .qr-container {
+    background: #fff;
+    padding: 24px;
+    border-radius: 24px;
+    display: inline-block;
+    margin-bottom: 32px;
+    box-shadow: 0 0 80px rgba(59, 130, 246, 0.4);
+    animation: glow 2s ease-in-out infinite;
+  }
+
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 40px rgba(59, 130, 246, 0.3); }
+    50% { box-shadow: 0 0 80px rgba(59, 130, 246, 0.7); }
+  }
+
+  .qr-container img {
+    width: 260px;
+    height: 260px;
+    display: block;
+  }
+
+  .amount {
+    font-size: 64px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+  }
+
+  .amount-label {
+    font-size: 20px;
+    color: #666;
+    margin-bottom: 32px;
+  }
+
+  .instruction {
+    font-size: 18px;
+    color: #888;
+    line-height: 1.6;
+  }
+
+  .instruction span {
+    color: #3B82F6;
+    font-weight: 600;
+  }
+
+  /* SUCCESS SCREEN */
+  .success-screen { display: none; }
+
+  .success-icon {
+    font-size: 100px;
+    animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    margin-bottom: 24px;
+  }
+
+  @keyframes pop {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+  }
+
+  .success-screen h2 {
+    font-size: 48px;
+    font-weight: 700;
+    color: #10B981;
+    margin-bottom: 12px;
+  }
+
+  .success-screen p {
+    font-size: 24px;
+    color: #555;
+  }
+
+  .barrier-opening {
+    margin-top: 24px;
+    font-size: 28px;
+    color: #10B981;
+    animation: blink 0.8s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+
+<!-- IDLE -->
+<div class="screen idle-screen" id="idleScreen">
+  <div class="logo">🅿️</div>
+  <h1>ПАРКОВКА</h1>
+  <p>Подъезжайте к шлагбауму</p>
+  <div class="pulse-ring"></div>
+  <p style="color:#333; font-size:16px;">Ожидание автомобиля...</p>
+</div>
+
+<!-- PAYMENT -->
+<div class="screen payment-screen" id="paymentScreen">
+  <div class="plate" id="plateDisplay">—</div>
+  <div class="qr-container">
+    <img id="qrImage" src="" alt="QR">
+  </div>
+  <div class="amount" id="amountDisplay">5 сомони</div>
+  <div class="amount-label">Сумма к оплате</div>
+  <div class="instruction">
+    Откройте <span>Alif Mobi</span> → Сканируйте QR → Нажмите <span>Оплатить</span>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="screen success-screen" id="successScreen">
+  <div class="success-icon">✅</div>
+  <h2>Оплачено!</h2>
+  <p id="successPlate"></p>
+  <div class="barrier-opening">🚧 Шлагбаум открывается...</div>
+</div>
+
+<script>
+const WS_URL = `ws://${location.host}/ws/exit-terminal`;
+let ws;
+
+function connect() {
+  ws = new WebSocket(WS_URL);
+
+  ws.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+
+    if (data.type === 'show_payment') {
+      showPayment(data.plate, data.amount, data.invoice_id);
+    } else if (data.type === 'payment_success') {
+      showSuccess(data.plate);
+    }
+  };
+
+  ws.onclose = () => setTimeout(connect, 2000);
+}
+
+function showPayment(plate, amount, invoiceId) {
+  document.getElementById('idleScreen').style.display = 'none';
+  document.getElementById('successScreen').style.display = 'none';
+
+  document.getElementById('plateDisplay').textContent = plate;
+  document.getElementById('amountDisplay').textContent = `${amount} сомони`;
+  document.getElementById('qrImage').src = `/api/qr/${invoiceId}`;
+
+  document.getElementById('paymentScreen').style.display = 'block';
+}
+
+function showSuccess(plate) {
+  document.getElementById('paymentScreen').style.display = 'none';
+  document.getElementById('successPlate').textContent = plate;
+  document.getElementById('successScreen').style.display = 'block';
+
+  setTimeout(() => {
+    document.getElementById('successScreen').style.display = 'none';
+    document.getElementById('idleScreen').style.display = 'block';
+  }, 5000);
+}
+
+connect();
+</script>
+</body>
+</html>

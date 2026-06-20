@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Панель охранника</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0A0A0F;
+    color: #fff;
+    font-family: -apple-system, 'Inter', sans-serif;
+    min-height: 100vh;
+    padding: 24px;
+  }
+  h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+  .subtitle { color: #555; font-size: 14px; margin-bottom: 32px; }
+
+  .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+
+  .card h2 { font-size: 16px; color: #888; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.1em; }
+
+  input {
+    width: 100%;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 14px 16px;
+    color: #fff;
+    font-size: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+    outline: none;
+  }
+
+  input:focus { border-color: rgba(59,130,246,0.5); }
+
+  .btn {
+    width: 100%;
+    padding: 18px;
+    border: none;
+    border-radius: 16px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+
+  .btn:active { transform: scale(0.97); }
+
+  .btn-entry {
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .btn-exit {
+    background: linear-gradient(135deg, #3B82F6, #2563EB);
+    color: #fff;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .stat {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .stat-value { font-size: 36px; font-weight: 800; }
+  .stat-label { font-size: 12px; color: #555; margin-top: 4px; }
+
+  .stat-cash .stat-value { color: #10B981; }
+  .stat-inside .stat-value { color: #3B82F6; }
+
+  .log { margin-top: 24px; }
+  .log-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 14px;
+  }
+  .log-plate { font-weight: 600; font-size: 16px; }
+  .log-type { padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+  .type-manual { background: rgba(16,185,129,0.15); color: #10B981; }
+  .type-auto { background: rgba(59,130,246,0.15); color: #3B82F6; }
+  .log-time { color: #555; font-size: 12px; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #10B981;
+    color: #fff;
+    padding: 14px 28px;
+    border-radius: 16px;
+    font-weight: 600;
+    font-size: 16px;
+    transition: transform 0.3s ease;
+    z-index: 100;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<h1>🔐 Панель охранника</h1>
+<p class="subtitle">Ручное управление шлагбаумом</p>
+
+<div class="stats">
+  <div class="stat stat-cash">
+    <div class="stat-value" id="cashCount">0</div>
+    <div class="stat-label">Наличных сегодня</div>
+  </div>
+  <div class="stat stat-inside">
+    <div class="stat-value" id="insideCount">0</div>
+    <div class="stat-label">Машин внутри</div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Открыть шлагбаум</h2>
+  <input type="text" id="plateInput" placeholder="Номер авто (необяз.)" maxlength="10">
+  <button class="btn btn-entry" onclick="openBarrier('entry')">🟢 ВЪЕЗД — Открыть</button>
+  <button class="btn btn-exit" onclick="openBarrier('exit')">🔵 ВЫЕЗД — Открыть</button>
+</div>
+
+<div class="log" id="logList"></div>
+
+<div class="toast" id="toast">✓ Шлагбаум открыт</div>
+
+<script>
+async function openBarrier(type) {
+  const plate = document.getElementById('plateInput').value.toUpperCase() || 'MANUAL';
+  const url = type === 'entry' ? '/api/guard/open-entry' : '/api/guard/open-exit';
+
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ plate })
+    });
+
+    document.getElementById('plateInput').value = '';
+    showToast(`✓ ${type === 'entry' ? 'Въезд' : 'Выезд'} открыт — ${plate}`);
+    loadStats();
+    loadLog();
+  } catch(e) {
+    showToast('❌ Ошибка подключения');
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+async function loadStats() {
+  try {
+    const r = await fetch('/api/admin/stats');
+    const d = await r.json();
+    document.getElementById('cashCount').textContent = d.paid_cash || 0;
+    document.getElementById('insideCount').textContent = d.currently_inside || 0;
+  } catch(e) {}
+}
+
+async function loadLog() {
+  try {
+    const r = await fetch('/api/admin/sessions');
+    const sessions = await r.json();
+    const list = document.getElementById('logList');
+    list.innerHTML = sessions.slice(0, 15).map(s => `
+      <div class="log-item">
+        <div>
+          <div class="log-plate">${s.plate || '—'}</div>
+          <div class="log-time">${s.entry_time ? new Date(s.entry_time).toLocaleTimeString('ru') : ''}</div>
+        </div>
+        <span class="log-type ${s.entry_type === 'manual' ? 'type-manual' : 'type-auto'}">
+          ${s.entry_type === 'manual' ? 'Наличные' : 'Авто'}
+        </span>
+      </div>
+    `).join('');
+  } catch(e) {}
+}
+
+loadStats();
+loadLog();
+setInterval(() => { loadStats(); loadLog(); }, 10000);
+</script>
+</body>
+</html>
