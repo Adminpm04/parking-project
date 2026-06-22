@@ -100,7 +100,7 @@ body{background:var(--bg);color:var(--text);transition:background .35s,color .35
 .flag-r{height:33.3%;background:#CC0001;}
 .flag-w{height:33.4%;background:#fff;}
 .flag-g{height:33.3%;background:#006600;}
-.plate-left .tj{font:700 10px Arial,sans-serif;color:#333;letter-spacing:.04em;}
+.plate-left .tj{font:800 11px Arial,sans-serif;color:#111;letter-spacing:.06em;margin-top:2px;}
 .plate-inp{flex:1;background:transparent;border:none;outline:none;font:800 30px 'Space Grotesk',sans-serif;letter-spacing:.12em;color:#111;text-transform:uppercase;padding:0 12px;min-width:0;caret-color:var(--accent);}
 .plate-inp::placeholder{color:#bbb;font-weight:600;font-size:24px;}
 .plate-clr{background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--text3);width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;transition:.15s;flex-shrink:0;}
@@ -228,7 +228,7 @@ body{background:var(--bg);color:var(--text);transition:background .35s,color .35
             </div>
             <div class="tj">TJ</div>
           </div>
-          <input class="plate-inp" id="plateIn" placeholder="4555 FF 02" maxlength="12" autocomplete="off" autocorrect="off" spellcheck="false">
+          <input class="plate-inp" id="plateIn" placeholder="4555FF02" maxlength="10" autocomplete="off" autocorrect="off" spellcheck="false">
         </div>
         <button class="plate-clr" onclick="clearPlate()" title="Очистить">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 5H9l-7 7 7 7h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z" stroke-linejoin="round"/><path d="M15 9l-6 6M9 9l6 6" stroke-linecap="round"/></svg>
