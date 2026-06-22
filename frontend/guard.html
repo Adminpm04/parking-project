@@ -1,210 +1,170 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Панель охранника</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Паркинг · Охранник</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: #0A0A0F;
-    color: #fff;
-    font-family: -apple-system, 'Inter', sans-serif;
-    min-height: 100vh;
-    padding: 24px;
-  }
-  h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
-  .subtitle { color: #555; font-size: 14px; margin-bottom: 32px; }
-
-  .card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 20px;
-    padding: 24px;
-    margin-bottom: 16px;
-  }
-
-  .card h2 { font-size: 16px; color: #888; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.1em; }
-
-  input {
-    width: 100%;
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 12px;
-    padding: 14px 16px;
-    color: #fff;
-    font-size: 20px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    margin-bottom: 12px;
-    outline: none;
-  }
-
-  input:focus { border-color: rgba(59,130,246,0.5); }
-
-  .btn {
-    width: 100%;
-    padding: 18px;
-    border: none;
-    border-radius: 16px;
-    font-size: 18px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.05em;
-  }
-
-  .btn:active { transform: scale(0.97); }
-
-  .btn-entry {
-    background: linear-gradient(135deg, #10B981, #059669);
-    color: #fff;
-    margin-bottom: 8px;
-  }
-
-  .btn-exit {
-    background: linear-gradient(135deg, #3B82F6, #2563EB);
-    color: #fff;
-  }
-
-  .stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-
-  .stat {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 16px;
-    padding: 20px;
-    text-align: center;
-  }
-
-  .stat-value { font-size: 36px; font-weight: 800; }
-  .stat-label { font-size: 12px; color: #555; margin-top: 4px; }
-
-  .stat-cash .stat-value { color: #10B981; }
-  .stat-inside .stat-value { color: #3B82F6; }
-
-  .log { margin-top: 24px; }
-  .log-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
-    font-size: 14px;
-  }
-  .log-plate { font-weight: 600; font-size: 16px; }
-  .log-type { padding: 4px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; }
-  .type-manual { background: rgba(16,185,129,0.15); color: #10B981; }
-  .type-auto { background: rgba(59,130,246,0.15); color: #3B82F6; }
-  .log-time { color: #555; font-size: 12px; }
-
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: #10B981;
-    color: #fff;
-    padding: 14px 28px;
-    border-radius: 16px;
-    font-weight: 600;
-    font-size: 16px;
-    transition: transform 0.3s ease;
-    z-index: 100;
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0f0f11;color:#F5F5F5;font-family:'Manrope',system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;}
+::-webkit-scrollbar{width:8px;}::-webkit-scrollbar-thumb{background:rgba(140,140,150,.3);border-radius:8px;}
+@keyframes liveBlink{0%,100%{opacity:1;}50%{opacity:.25;}}
+@keyframes floatBlob{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(26px,-32px) scale(1.08);}}
+:root{
+  --bg:#0f0f11;--surface:rgba(255,255,255,0.05);--surface-2:rgba(255,255,255,0.085);
+  --border:rgba(255,255,255,0.10);--text:#F5F5F5;--text-2:#a4a4ac;--text-3:#6b6b73;
+  --accent:#CB3A52;--accent-2:#8B253B;--accent-soft:rgba(203,58,82,0.17);--accent-line:rgba(203,58,82,0.45);
+  --shadow:0 26px 64px -26px rgba(0,0,0,.78);--blur:20px;--radius:22px;--radius-sm:14px;
+}
+.blob{position:fixed;border-radius:50%;filter:blur(40px);pointer-events:none;z-index:0;}
+.blob-1{top:-180px;right:-120px;width:560px;height:560px;background:radial-gradient(circle,var(--accent-2),transparent 68%);opacity:.4;animation:floatBlob 14s ease-in-out infinite;}
+.blob-2{bottom:-220px;left:-140px;width:520px;height:520px;background:radial-gradient(circle,var(--accent-2),transparent 70%);opacity:.3;animation:floatBlob 18s ease-in-out infinite reverse;}
+.header{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 24px;background:var(--surface);border-bottom:1px solid var(--border);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);}
+.logo{display:flex;align-items:center;gap:13px;}
+.logo-icon{width:38px;height:38px;border-radius:11px;background:linear-gradient(140deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px -8px var(--accent-line);}
+.logo-name{font:700 16px 'Space Grotesk',sans-serif;letter-spacing:-.01em;color:var(--text);}
+.logo-name span{color:var(--accent);}
+.logo-sub{font:500 11px Manrope;color:var(--text-3);margin-top:1px;}
+.hnav{display:flex;gap:4px;padding:4px;background:var(--surface-2);border:1px solid var(--border);border-radius:13px;}
+.hnav a{padding:7px 16px;border-radius:9px;font:600 12.5px Manrope;color:var(--text-2);text-decoration:none;transition:.18s;}
+.hnav a.active{background:var(--accent);color:#fff;box-shadow:0 6px 16px -6px var(--accent-line);}
+.hnav a:hover:not(.active){background:var(--surface-2);}
+.page{position:relative;z-index:1;min-height:calc(100vh - 70px);display:flex;align-items:center;justify-content:center;padding:40px 20px;}
+.phone{width:392px;max-width:100%;border-radius:46px;padding:14px;background:var(--surface-2);border:1px solid var(--border);box-shadow:var(--shadow);}
+.screen{border-radius:34px;overflow:hidden;background:var(--bg);border:1px solid var(--border);position:relative;}
+.notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:120px;height:26px;border-radius:999px;background:var(--surface-2);z-index:3;}
+.inner{padding:48px 22px 28px;}
+.head{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.hi{width:34px;height:34px;border-radius:10px;background:linear-gradient(140deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;}
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin:22px 0;}
+.stat{padding:18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);text-align:center;backdrop-filter:blur(var(--blur));}
+.stat-num{font:700 32px 'Space Grotesk',sans-serif;line-height:1;}
+.stat-lbl{font:500 11px Manrope;color:var(--text-3);margin-top:6px;}
+.ctrl{padding:18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);backdrop-filter:blur(var(--blur));margin-bottom:20px;}
+.ctrl-lbl{font:600 10.5px Manrope;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:12px;}
+input{appearance:none;background:var(--surface-2);border:1px solid var(--border);border-radius:11px;padding:12px 14px;color:var(--text);font:500 14px Manrope,sans-serif;outline:none;width:100%;margin-bottom:11px;transition:border-color .18s;}
+input:focus{border-color:var(--accent-line);}
+input::placeholder{color:var(--text-3);}
+.btn-entry{appearance:none;border:none;cursor:pointer;border-radius:12px;font:700 16px Manrope,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;margin-bottom:9px;background:linear-gradient(135deg,#3aa86b,#2c8a55);color:#fff;box-shadow:0 10px 24px -10px rgba(58,168,107,.6);transition:transform .15s,opacity .15s;}
+.btn-entry:hover{opacity:.9;}
+.btn-entry:active{transform:scale(.97);}
+.btn-exit{appearance:none;border:none;cursor:pointer;border-radius:12px;font:700 16px Manrope,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;box-shadow:0 10px 24px -10px var(--accent-line);transition:transform .15s,opacity .15s;}
+.btn-exit:hover{opacity:.9;}
+.btn-exit:active{transform:scale(.97);}
+.log-lbl{font:600 10.5px Manrope;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px;}
+.log-item{display:flex;align-items:center;justify-content:space-between;padding:11px 2px;border-bottom:1px solid var(--border);}
+.log-plate{font:600 14px 'Space Grotesk',sans-serif;letter-spacing:.05em;color:var(--text);}
+.log-time{font:500 11px Manrope;color:var(--text-3);margin-top:2px;}
+.badge{display:inline-block;padding:4px 11px;border-radius:999px;font:600 11.5px Manrope;}
+.b-auto{background:var(--accent-soft);color:var(--accent);}
+.b-cash{background:rgba(70,181,118,.14);color:#46b576;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:14px 22px;font:600 14px Manrope;color:var(--text);backdrop-filter:blur(20px);z-index:100;transition:transform .3s,opacity .3s;opacity:0;}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+.toast.ok{border-color:rgba(70,181,118,.4);color:#46b576;}
 </style>
 </head>
 <body>
-<h1>🔐 Панель охранника</h1>
-<p class="subtitle">Ручное управление шлагбаумом</p>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
 
-<div class="stats">
-  <div class="stat stat-cash">
-    <div class="stat-value" id="cashCount">0</div>
-    <div class="stat-label">Наличных сегодня</div>
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 20V5a1 1 0 0 1 1-1h6.5a5 5 0 0 1 0 10H8" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div><div class="logo-name">Паркинг<span>.</span></div><div class="logo-sub">Система управления</div></div>
   </div>
-  <div class="stat stat-inside">
-    <div class="stat-value" id="insideCount">0</div>
-    <div class="stat-label">Машин внутри</div>
+  <div class="hnav">
+    <a href="/admin">Админка</a>
+    <a href="/guard" class="active">Охранник</a>
+    <a href="/">Терминал</a>
   </div>
 </div>
 
-<div class="card">
-  <h2>Открыть шлагбаум</h2>
-  <input type="text" id="plateInput" placeholder="Номер авто (необяз.)" maxlength="10">
-  <button class="btn btn-entry" onclick="openBarrier('entry')">🟢 ВЪЕЗД — Открыть</button>
-  <button class="btn btn-exit" onclick="openBarrier('exit')">🔵 ВЫЕЗД — Открыть</button>
+<div class="page">
+  <div class="phone">
+    <div class="screen">
+      <div class="notch"></div>
+      <div class="inner">
+        <div class="head">
+          <div class="hi"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 20V5a1 1 0 0 1 1-1h6.5a5 5 0 0 1 0 10H8" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div><div style="font:700 16px 'Space Grotesk',sans-serif;color:var(--text);line-height:1;">Охранник</div><div style="font:500 11px Manrope;color:var(--text-3);margin-top:3px;">Ручное управление</div></div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat"><div class="stat-num" style="color:#46b576;" id="cashToday">—</div><div class="stat-lbl">Наличных сегодня</div></div>
+          <div class="stat"><div class="stat-num" style="color:var(--accent);" id="insideNow">—</div><div class="stat-lbl">Машин внутри</div></div>
+        </div>
+
+        <div class="ctrl">
+          <div class="ctrl-lbl">Открыть шлагбаум</div>
+          <input id="plateIn" placeholder="Номер авто (необяз.)" style="text-transform:uppercase;letter-spacing:.08em;">
+          <button class="btn-entry" onclick="openGate('entry')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+            ВЪЕЗД — Открыть
+          </button>
+          <button class="btn-exit" onclick="openGate('exit')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            ВЫЕЗД — Открыть
+          </button>
+        </div>
+
+        <div class="log-lbl">Последние действия</div>
+        <div id="logList"></div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="log" id="logList"></div>
-
-<div class="toast" id="toast">✓ Шлагбаум открыт</div>
+<div class="toast" id="toast"></div>
 
 <script>
-async function openBarrier(type) {
-  const plate = document.getElementById('plateInput').value.toUpperCase() || 'MANUAL';
-  const url = type === 'entry' ? '/api/guard/open-entry' : '/api/guard/open-exit';
+const fmt=t=>new Date(t).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'});
+let log=[];
 
-  try {
-    await fetch(url, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ plate })
-    });
-
-    document.getElementById('plateInput').value = '';
-    showToast(`✓ ${type === 'entry' ? 'Въезд' : 'Выезд'} открыт — ${plate}`);
-    loadStats();
-    loadLog();
-  } catch(e) {
-    showToast('❌ Ошибка подключения');
-  }
+function showToast(msg,ok=true){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast'+(ok?' ok':'');
+  void t.offsetWidth;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
 }
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
+async function loadStats(){
+  try{
+    const s=await(await fetch('/api/admin/stats')).json();
+    document.getElementById('cashToday').textContent=s.paid_cash;
+    document.getElementById('insideNow').textContent=s.currently_inside;
+  }catch(e){}
 }
 
-async function loadStats() {
-  try {
-    const r = await fetch('/api/admin/stats');
-    const d = await r.json();
-    document.getElementById('cashCount').textContent = d.paid_cash || 0;
-    document.getElementById('insideCount').textContent = d.currently_inside || 0;
-  } catch(e) {}
+function renderLog(){
+  const el=document.getElementById('logList');
+  if(!log.length){el.innerHTML='<div style="color:var(--text-3);font:500 12px Manrope;padding:12px 0;">Нет действий</div>';return;}
+  el.innerHTML=log.slice(0,8).map(g=>`
+    <div class="log-item">
+      <div><div class="log-plate">${g.plate}</div><div class="log-time">${g.time}</div></div>
+      <span class="badge ${g.dir==='entry'?'b-cash':'b-auto'}">${g.dir==='entry'?'Въезд':'Выезд'}</span>
+    </div>`).join('');
 }
 
-async function loadLog() {
-  try {
-    const r = await fetch('/api/admin/sessions');
-    const sessions = await r.json();
-    const list = document.getElementById('logList');
-    list.innerHTML = sessions.slice(0, 15).map(s => `
-      <div class="log-item">
-        <div>
-          <div class="log-plate">${s.plate || '—'}</div>
-          <div class="log-time">${s.entry_time ? new Date(s.entry_time).toLocaleTimeString('ru') : ''}</div>
-        </div>
-        <span class="log-type ${s.entry_type === 'manual' ? 'type-manual' : 'type-auto'}">
-          ${s.entry_type === 'manual' ? 'Наличные' : 'Авто'}
-        </span>
-      </div>
-    `).join('');
-  } catch(e) {}
+async function openGate(dir){
+  const plate=document.getElementById('plateIn').value.trim().toUpperCase()||'MANUAL';
+  const url=dir==='entry'?'/api/guard/open-entry':'/api/guard/open-exit';
+  try{
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plate})});
+    const d=await r.json();
+    if(d.success){
+      showToast(dir==='entry'?'Въезд открыт ✓':'Выезд открыт ✓');
+      log.unshift({plate,time:fmt(new Date()),dir});
+      renderLog();loadStats();
+      document.getElementById('plateIn').value='';
+    }
+  }catch(e){showToast('Ошибка связи',false);}
 }
 
-loadStats();
-loadLog();
-setInterval(() => { loadStats(); loadLog(); }, 10000);
+loadStats();renderLog();
+setInterval(loadStats,15000);
 </script>
 </body>
 </html>
