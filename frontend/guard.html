@@ -2,169 +2,234 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <title>Паркинг · Охранник</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:#0f0f11;color:#F5F5F5;font-family:'Manrope',system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;}
-::-webkit-scrollbar{width:8px;}::-webkit-scrollbar-thumb{background:rgba(140,140,150,.3);border-radius:8px;}
+body{background:#0f0f11;color:#F5F5F5;font-family:'Manrope',system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px;}
+body.light{background:#f0f0f2;color:#141414;}
 @keyframes liveBlink{0%,100%{opacity:1;}50%{opacity:.25;}}
-@keyframes floatBlob{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(26px,-32px) scale(1.08);}}
+
+/* DARK */
 :root{
-  --bg:#0f0f11;--surface:rgba(255,255,255,0.05);--surface-2:rgba(255,255,255,0.085);
-  --border:rgba(255,255,255,0.10);--text:#F5F5F5;--text-2:#a4a4ac;--text-3:#6b6b73;
+  --bg:#0f0f11;--surface:#1a1a1e;--surface-2:#23232a;
+  --border:rgba(255,255,255,0.08);--text:#F5F5F5;--text-2:#a4a4ac;--text-3:#6b6b73;
   --accent:#CB3A52;--accent-2:#8B253B;--accent-soft:rgba(203,58,82,0.17);--accent-line:rgba(203,58,82,0.45);
-  --shadow:0 26px 64px -26px rgba(0,0,0,.78);--blur:20px;--radius:22px;--radius-sm:14px;
+  --green:#3aa86b;--green-soft:rgba(58,168,107,0.15);--green-line:rgba(58,168,107,0.5);
+  --radius:16px;--radius-sm:11px;
 }
-.blob{position:fixed;border-radius:50%;filter:blur(40px);pointer-events:none;z-index:0;}
-.blob-1{top:-180px;right:-120px;width:560px;height:560px;background:radial-gradient(circle,var(--accent-2),transparent 68%);opacity:.4;animation:floatBlob 14s ease-in-out infinite;}
-.blob-2{bottom:-220px;left:-140px;width:520px;height:520px;background:radial-gradient(circle,var(--accent-2),transparent 70%);opacity:.3;animation:floatBlob 18s ease-in-out infinite reverse;}
-.header{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 24px;background:var(--surface);border-bottom:1px solid var(--border);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);}
-.logo{display:flex;align-items:center;gap:13px;}
-.logo-icon{width:38px;height:38px;border-radius:11px;background:linear-gradient(140deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px -8px var(--accent-line);}
-.logo-name{font:700 16px 'Space Grotesk',sans-serif;letter-spacing:-.01em;color:var(--text);}
+/* LIGHT */
+body.light{
+  --bg:#f0f0f2;--surface:#ffffff;--surface-2:#f2efef;
+  --border:rgba(17,17,17,0.09);--text:#141414;--text-2:#5c5c62;--text-3:#9a9aa0;
+  --accent:#8B253B;--accent-2:#6E1B2E;--accent-soft:rgba(139,37,59,0.10);--accent-line:rgba(139,37,59,0.30);
+}
+
+.app{width:100%;max-width:380px;display:flex;flex-direction:column;gap:12px;}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:4px 0 8px;}
+.logo{display:flex;align-items:center;gap:9px;}
+.logo-icon{width:34px;height:34px;border-radius:10px;background:linear-gradient(140deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px -6px var(--accent-line);}
+.logo-name{font:700 18px 'Space Grotesk',sans-serif;color:var(--text);}
 .logo-name span{color:var(--accent);}
-.logo-sub{font:500 11px Manrope;color:var(--text-3);margin-top:1px;}
-.hnav{display:flex;gap:4px;padding:4px;background:var(--surface-2);border:1px solid var(--border);border-radius:13px;}
-.hnav a{padding:7px 16px;border-radius:9px;font:600 12.5px Manrope;color:var(--text-2);text-decoration:none;transition:.18s;}
-.hnav a.active{background:var(--accent);color:#fff;box-shadow:0 6px 16px -6px var(--accent-line);}
-.hnav a:hover:not(.active){background:var(--surface-2);}
-.page{position:relative;z-index:1;min-height:calc(100vh - 70px);display:flex;align-items:center;justify-content:center;padding:40px 20px;}
-.phone{width:392px;max-width:100%;border-radius:46px;padding:14px;background:var(--surface-2);border:1px solid var(--border);box-shadow:var(--shadow);}
-.screen{border-radius:34px;overflow:hidden;background:var(--bg);border:1px solid var(--border);position:relative;}
-.notch{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:120px;height:26px;border-radius:999px;background:var(--surface-2);z-index:3;}
-.inner{padding:48px 22px 28px;}
-.head{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
-.hi{width:34px;height:34px;border-radius:10px;background:linear-gradient(140deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;}
-.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin:22px 0;}
-.stat{padding:18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);text-align:center;backdrop-filter:blur(var(--blur));}
-.stat-num{font:700 32px 'Space Grotesk',sans-serif;line-height:1;}
-.stat-lbl{font:500 11px Manrope;color:var(--text-3);margin-top:6px;}
-.ctrl{padding:18px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);backdrop-filter:blur(var(--blur));margin-bottom:20px;}
-.ctrl-lbl{font:600 10.5px Manrope;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:12px;}
-input{appearance:none;background:var(--surface-2);border:1px solid var(--border);border-radius:11px;padding:12px 14px;color:var(--text);font:500 14px Manrope,sans-serif;outline:none;width:100%;margin-bottom:11px;transition:border-color .18s;}
-input:focus{border-color:var(--accent-line);}
-input::placeholder{color:var(--text-3);}
-.btn-entry{appearance:none;border:none;cursor:pointer;border-radius:12px;font:700 16px Manrope,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;margin-bottom:9px;background:linear-gradient(135deg,#3aa86b,#2c8a55);color:#fff;box-shadow:0 10px 24px -10px rgba(58,168,107,.6);transition:transform .15s,opacity .15s;}
-.btn-entry:hover{opacity:.9;}
-.btn-entry:active{transform:scale(.97);}
-.btn-exit{appearance:none;border:none;cursor:pointer;border-radius:12px;font:700 16px Manrope,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:16px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;box-shadow:0 10px 24px -10px var(--accent-line);transition:transform .15s,opacity .15s;}
-.btn-exit:hover{opacity:.9;}
-.btn-exit:active{transform:scale(.97);}
-.log-lbl{font:600 10.5px Manrope;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px;}
-.log-item{display:flex;align-items:center;justify-content:space-between;padding:11px 2px;border-bottom:1px solid var(--border);}
-.log-plate{font:600 14px 'Space Grotesk',sans-serif;letter-spacing:.05em;color:var(--text);}
-.log-time{font:500 11px Manrope;color:var(--text-3);margin-top:2px;}
-.badge{display:inline-block;padding:4px 11px;border-radius:999px;font:600 11.5px Manrope;}
-.b-auto{background:var(--accent-soft);color:var(--accent);}
-.b-cash{background:rgba(70,181,118,.14);color:#46b576;}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface-2);border:1px solid var(--border);border-radius:14px;padding:14px 22px;font:600 14px Manrope;color:var(--text);backdrop-filter:blur(20px);z-index:100;transition:transform .3s,opacity .3s;opacity:0;}
+.theme-btn{width:36px;height:36px;border-radius:10px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-2);transition:.18s;}
+.theme-btn:hover{background:var(--surface-2);}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;position:relative;overflow:hidden;}
+.stat::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--accent);opacity:.6;}
+.stat-lbl{font:600 10px Manrope;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);margin-bottom:8px;}
+.stat-val{font:700 38px 'Space Grotesk',sans-serif;color:var(--text);line-height:1;}
+
+/* PLATE INPUT */
+.plate-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;display:flex;align-items:center;gap:10px;}
+.plate-flag{width:32px;height:32px;border-radius:6px;background:linear-gradient(180deg,#003087 50%,#CE1126 50%);display:flex;align-items:center;justify-content:center;flex-shrink:0;font:700 8px sans-serif;color:#fff;text-align:center;line-height:1.1;}
+.plate-input{flex:1;background:transparent;border:none;outline:none;font:700 22px 'Space Grotesk',sans-serif;letter-spacing:.12em;color:var(--text);text-transform:uppercase;width:0;}
+.plate-input::placeholder{color:var(--text-3);font-weight:600;}
+.plate-clear{width:32px;height:32px;border-radius:8px;background:var(--surface-2);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-3);flex-shrink:0;transition:.15s;}
+.plate-clear:hover{color:var(--text-2);}
+
+/* BUTTONS */
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.btn-entry,.btn-exit{border:none;cursor:pointer;border-radius:var(--radius);font:700 18px Manrope;padding:18px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;transition:transform .15s,opacity .15s;width:100%;}
+.btn-entry{background:linear-gradient(135deg,#3aa86b,#2c8a55);color:#fff;box-shadow:0 10px 24px -10px rgba(58,168,107,.6);}
+.btn-exit{background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;box-shadow:0 10px 24px -10px var(--accent-line);}
+.btn-entry:active,.btn-exit:active{transform:scale(.97);}
+.btn-arrow{font-size:22px;line-height:1;}
+
+/* JOURNAL */
+.journal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.j-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);}
+.j-title{font:600 10px Manrope;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);}
+.j-refresh{width:28px;height:28px;border-radius:8px;background:var(--surface-2);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-3);transition:.15s;}
+.j-refresh:hover{color:var(--text-2);}
+.j-item{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--border);transition:background .15s;}
+.j-item:last-child{border-bottom:none;}
+.j-item:hover{background:var(--surface-2);}
+.j-ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.j-ico.entry{background:var(--green-soft);}
+.j-ico.exit{background:var(--accent-soft);}
+.j-ico.deny{background:rgba(203,58,82,0.2);}
+.j-info{flex:1;min-width:0;}
+.j-type{font:600 13.5px Manrope;color:var(--text);}
+.j-meta{font:500 11px Manrope;color:var(--text-3);margin-top:2px;}
+.j-plate{font:600 12px 'Space Grotesk',sans-serif;letter-spacing:.06em;padding:4px 9px;border-radius:7px;background:var(--surface-2);border:1px solid var(--border);color:var(--text);white-space:nowrap;flex-shrink:0;}
+.j-empty{padding:24px 16px;text-align:center;font:500 13px Manrope;color:var(--text-3);}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:13px 22px;font:600 14px Manrope;color:var(--text);z-index:100;transition:transform .3s,opacity .3s;opacity:0;white-space:nowrap;}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
-.toast.ok{border-color:rgba(70,181,118,.4);color:#46b576;}
+.toast.ok{border-color:var(--green-line);color:var(--green);}
+.toast.err{border-color:var(--accent-line);color:var(--accent);}
 </style>
 </head>
 <body>
-<div class="blob blob-1"></div>
-<div class="blob blob-2"></div>
 
-<div class="header">
-  <div class="logo">
-    <div class="logo-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 20V5a1 1 0 0 1 1-1h6.5a5 5 0 0 1 0 10H8" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-    <div><div class="logo-name">Паркинг<span>.</span></div><div class="logo-sub">Система управления</div></div>
-  </div>
-  <div class="hnav">
-    <a href="/admin">Админка</a>
-    <a href="/guard" class="active">Охранник</a>
-    <a href="/">Терминал</a>
-  </div>
-</div>
-
-<div class="page">
-  <div class="phone">
-    <div class="screen">
-      <div class="notch"></div>
-      <div class="inner">
-        <div class="head">
-          <div class="hi"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 20V5a1 1 0 0 1 1-1h6.5a5 5 0 0 1 0 10H8" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <div><div style="font:700 16px 'Space Grotesk',sans-serif;color:var(--text);line-height:1;">Охранник</div><div style="font:500 11px Manrope;color:var(--text-3);margin-top:3px;">Ручное управление</div></div>
-        </div>
-
-        <div class="stats-row">
-          <div class="stat"><div class="stat-num" style="color:#46b576;" id="cashToday">—</div><div class="stat-lbl">Наличных сегодня</div></div>
-          <div class="stat"><div class="stat-num" style="color:var(--accent);" id="insideNow">—</div><div class="stat-lbl">Машин внутри</div></div>
-        </div>
-
-        <div class="ctrl">
-          <div class="ctrl-lbl">Открыть шлагбаум</div>
-          <input id="plateIn" placeholder="Номер авто (необяз.)" style="text-transform:uppercase;letter-spacing:.08em;">
-          <button class="btn-entry" onclick="openGate('entry')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
-            ВЪЕЗД — Открыть
-          </button>
-          <button class="btn-exit" onclick="openGate('exit')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            ВЫЕЗД — Открыть
-          </button>
-        </div>
-
-        <div class="log-lbl">Последние действия</div>
-        <div id="logList"></div>
+<div class="app">
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 20V5a1 1 0 0 1 1-1h6.5a5 5 0 0 1 0 10H8" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
+      <div class="logo-name">P <span>Terminal</span></div>
     </div>
+    <button class="theme-btn" onclick="toggleTheme()" id="themeBtn" title="Тема">
+      <svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-lbl">Свободно</div>
+      <div class="stat-val" id="statFree">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-lbl">Заезды</div>
+      <div class="stat-val" id="statTotal">—</div>
+    </div>
+  </div>
+
+  <!-- PLATE INPUT -->
+  <div class="plate-wrap">
+    <div class="plate-flag">TJ</div>
+    <input class="plate-input" id="plateIn" placeholder="A 000 AA 77" maxlength="12">
+    <button class="plate-clear" onclick="clearPlate()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M20 5H9l-7 7 7 7h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zM15 9l-6 6M9 9l6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+
+  <!-- BUTTONS -->
+  <div class="btns">
+    <button class="btn-entry" onclick="openGate('entry')">
+      <span class="btn-arrow">↓</span>
+      <span>ВЪЕЗД</span>
+    </button>
+    <button class="btn-exit" onclick="openGate('exit')">
+      <span class="btn-arrow">↑</span>
+      <span>ВЫЕЗД</span>
+    </button>
+  </div>
+
+  <!-- JOURNAL -->
+  <div class="journal">
+    <div class="j-hdr">
+      <span class="j-title">Журнал операций</span>
+      <button class="j-refresh" onclick="loadStats()" title="Обновить">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 3v5h5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <div id="logList"><div class="j-empty">Нет операций</div></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const fmt=t=>new Date(t).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'});
-let log=[];
+const CAP = 60;
+let log = [];
+let dark = true;
 
-function showToast(msg,ok=true){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.className='toast'+(ok?' ok':'');
-  void t.offsetWidth;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2500);
+function toggleTheme() {
+  dark = !dark;
+  document.body.classList.toggle('light', !dark);
+  const icon = document.getElementById('themeIcon');
+  if (dark) {
+    icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke-linecap="round" stroke-linejoin="round"/>';
+  } else {
+    icon.innerHTML = '<circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke-linecap="round"/>';
+  }
 }
 
-async function loadStats(){
-  try{
-    const s=await(await fetch('/api/admin/stats')).json();
-    document.getElementById('cashToday').textContent=s.paid_cash;
-    document.getElementById('insideNow').textContent=s.currently_inside;
-  }catch(e){}
+function clearPlate() {
+  document.getElementById('plateIn').value = '';
+  document.getElementById('plateIn').focus();
 }
 
-function renderLog(){
-  const el=document.getElementById('logList');
-  if(!log.length){el.innerHTML='<div style="color:var(--text-3);font:500 12px Manrope;padding:12px 0;">Нет действий</div>';return;}
-  el.innerHTML=log.slice(0,8).map(g=>`
-    <div class="log-item">
-      <div><div class="log-plate">${g.plate}</div><div class="log-time">${g.time}</div></div>
-      <span class="badge ${g.dir==='entry'?'b-cash':'b-auto'}">${g.dir==='entry'?'Въезд':'Выезд'}</span>
-    </div>`).join('');
+function showToast(msg, type = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type;
+  void t.offsetWidth;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-async function openGate(dir){
-  const plate=document.getElementById('plateIn').value.trim().toUpperCase()||'MANUAL';
-  const url=dir==='entry'?'/api/guard/open-entry':'/api/guard/open-exit';
-  try{
-    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({plate})});
-    const d=await r.json();
-    if(d.success){
-      showToast(dir==='entry'?'Въезд открыт ✓':'Выезд открыт ✓');
-      log.unshift({plate,time:fmt(new Date()),dir});
-      renderLog();loadStats();
-      document.getElementById('plateIn').value='';
+async function loadStats() {
+  try {
+    const s = await (await fetch('/api/admin/stats')).json();
+    document.getElementById('statFree').textContent = Math.max(0, CAP - s.currently_inside);
+    document.getElementById('statTotal').textContent = s.total_today;
+  } catch(e) {}
+}
+
+function renderLog() {
+  const el = document.getElementById('logList');
+  if (!log.length) { el.innerHTML = '<div class="j-empty">Нет операций</div>'; return; }
+  el.innerHTML = log.slice(0, 8).map(g => {
+    const ico = g.type === 'entry'
+      ? `<div class="j-ico entry"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3aa86b" stroke-width="2.2"><path d="M12 19V5M5 12l7-7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`
+      : g.type === 'exit'
+      ? `<div class="j-ico exit"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.2"><path d="M12 5v14M5 12l7 7 7-7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>`
+      : `<div class="j-ico deny"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.2"><circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12" stroke-linecap="round"/></svg></div>`;
+    const label = g.type === 'entry' ? 'Въезд' : g.type === 'exit' ? 'Выезд' : 'Отказ въезда';
+    return `<div class="j-item">
+      ${ico}
+      <div class="j-info">
+        <div class="j-type">${label}</div>
+        <div class="j-meta">${g.time} · Шлагбаум ${g.barrier}</div>
+      </div>
+      <span class="j-plate">${g.plate}</span>
+    </div>`;
+  }).join('');
+}
+
+async function openGate(dir) {
+  const plate = document.getElementById('plateIn').value.trim().toUpperCase() || 'MANUAL';
+  const url = dir === 'entry' ? '/api/guard/open-entry' : '/api/guard/open-exit';
+  try {
+    const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ plate }) });
+    const d = await r.json();
+    if (d.success) {
+      const now = new Date();
+      const time = now.toLocaleTimeString('ru', { hour: '2-digit', minute: '2-digit' });
+      log.unshift({ plate, time, type: dir, barrier: dir === 'entry' ? 1 : 2 });
+      renderLog();
+      loadStats();
+      clearPlate();
+      showToast(dir === 'entry' ? '↓ Въезд открыт' : '↑ Выезд открыт', 'ok');
     }
-  }catch(e){showToast('Ошибка связи',false);}
+  } catch(e) { showToast('Ошибка связи', 'err'); }
 }
 
-loadStats();renderLog();
-setInterval(loadStats,15000);
+loadStats();
+setInterval(loadStats, 15000);
 </script>
 </body>
 </html>
