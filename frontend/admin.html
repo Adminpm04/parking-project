@@ -106,6 +106,56 @@ input::placeholder{color:var(--text-3);}
 .tab.active{display:block;}
 .live-pill{display:flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;background:var(--surface);border:1px solid var(--border);}
 .ldot{width:8px;height:8px;border-radius:50%;background:#46b576;box-shadow:0 0 0 4px rgba(70,181,118,.18);animation:liveBlink 1.6s infinite;display:inline-block;}
+
+/* ── MOBILE TABS ── */
+.mob-tabs{display:none;overflow-x:auto;gap:6px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.mob-tabs::-webkit-scrollbar{display:none;}
+.mob-tab{display:flex;align-items:center;gap:7px;padding:9px 14px;border-radius:11px;cursor:pointer;font:600 13px Manrope;color:var(--text-2);white-space:nowrap;border:1px solid transparent;transition:.18s;background:none;flex-shrink:0;}
+.mob-tab.active{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-line);}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .stats-grid{grid-template-columns:1fr 1fr;}
+  .ag{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:768px){
+  .hnav{display:none;}
+  aside{display:none;}
+  .mob-tabs{display:flex;}
+  .layout{flex-direction:column;}
+  main{padding:20px 16px 40px;}
+  h1{font-size:22px;}
+  .subtitle{font-size:13px;}
+  .live-pill{display:none;}
+  .stats-grid{grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+  .sc{padding:16px;}
+  .sval{font-size:28px;}
+  .slabel{font-size:12px;}
+  .sicon{width:34px;height:34px;border-radius:10px;}
+  .charts-row{grid-template-columns:1fr;margin-bottom:12px;}
+  .bars{height:130px;}
+  .rg{grid-template-columns:1fr;gap:10px;}
+  .rv{font-size:26px;}
+  .ag{grid-template-columns:1fr 1fr;gap:10px;}
+  .acard{padding:14px;}
+  .card{border-radius:16px;}
+  .cp{padding:16px;}
+  /* table scroll */
+  .card.table-scroll{overflow-x:auto;}
+  table{min-width:520px;}
+  th,td{padding:12px 10px;font-size:12px;}
+  td:first-child,th:first-child{padding-left:14px;}
+  td:last-child,th:last-child{padding-right:14px;}
+  /* forms */
+  .form-row{flex-direction:column;align-items:stretch;}
+  .form-row input{width:100%!important;}
+  .form-row .btn{width:100%;padding:14px;}
+}
+@media(max-width:480px){
+  .ag{grid-template-columns:1fr;}
+  .stats-grid{grid-template-columns:1fr 1fr;}
+  .header{padding:12px 14px;}
+}
 </style>
 </head>
 <body>
@@ -142,6 +192,25 @@ input::placeholder{color:var(--text-3);}
       <div style="font:500 11.5px Manrope;color:var(--text-2);margin-top:6px;line-height:1.5;">Камеры и шлагбаумы<br>работают штатно</div>
     </div>
   </aside>
+
+  <!-- MOBILE TAB BAR -->
+  <div class="mob-tabs" id="mobTabs">
+    <button class="mob-tab active" onclick="setTab('dashboard',this,'mob')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="8" rx="1.4"/><rect x="14" y="3" width="7" height="5" rx="1.4"/><rect x="14" y="11" width="7" height="10" rx="1.4"/><rect x="3" y="14" width="7" height="7" rx="1.4"/></svg>Дашборд
+    </button>
+    <button class="mob-tab" onclick="setTab('journal',this,'mob')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16M4 12h16M4 19h10" stroke-linecap="round"/></svg>Журнал
+    </button>
+    <button class="mob-tab" onclick="setTab('active',this,'mob')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 16l1.5-5A2 2 0 0 1 8.4 9.6h7.2a2 2 0 0 1 1.9 1.4L19 16M5 16h14v3a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-1H8v1a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-3z" stroke-linecap="round" stroke-linejoin="round"/></svg>Внутри
+    </button>
+    <button class="mob-tab" onclick="setTab('subs',this,'mob')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8z" stroke-linejoin="round"/><path d="M11 6v12" stroke-dasharray="1.5 2.5"/></svg>Абонементы
+    </button>
+    <button class="mob-tab" onclick="setTab('black',this,'mob')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12" stroke-linecap="round"/></svg>Блок-лист
+    </button>
+  </div>
 
   <main>
     <!-- DASHBOARD -->
@@ -188,7 +257,7 @@ input::placeholder{color:var(--text-3);}
     <!-- JOURNAL -->
     <div id="tab-journal" class="tab">
       <h1>Журнал</h1><div class="subtitle" style="margin-bottom:24px;">Последние въезды и выезды</div>
-      <div class="card" style="overflow:hidden;"><table><thead><tr>
+      <div class="card table-scroll" style="overflow:hidden;"><table><thead><tr>
         <th>Номер</th><th>Въезд</th><th>Выезд</th><th>Способ</th><th>Статус</th><th>Сумма</th>
       </tr></thead><tbody id="jtb"></tbody></table></div>
     </div>
@@ -211,7 +280,7 @@ input::placeholder{color:var(--text-3);}
           <button class="btn btn-p" onclick="addSub()">Добавить</button>
         </div>
       </div>
-      <div class="card" style="overflow:hidden;"><table><thead><tr>
+      <div class="card table-scroll" style="overflow:hidden;"><table><thead><tr>
         <th>Номер</th><th>Владелец</th><th>Действует до</th><th>Статус</th>
       </tr></thead><tbody id="stb"></tbody></table></div>
     </div>
@@ -227,7 +296,7 @@ input::placeholder{color:var(--text-3);}
           <button class="btn btn-d" onclick="addBl()">Заблокировать</button>
         </div>
       </div>
-      <div class="card" style="overflow:hidden;"><table><thead><tr>
+      <div class="card table-scroll" style="overflow:hidden;"><table><thead><tr>
         <th>Номер</th><th>Причина</th><th>Добавлен</th>
       </tr></thead><tbody id="btb"></tbody></table></div>
     </div>
@@ -243,11 +312,19 @@ document.getElementById('dateLabel').textContent=DAYS[now.getDay()]+', '+now.get
 const fmt=t=>t?new Date(t+'Z').toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'}):'—';
 const fmtD=t=>t?new Date(t+'Z').toLocaleDateString('ru',{day:'numeric',month:'short',year:'numeric'}):'—';
 
-function setTab(name,el){
+function setTab(name,el,src){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('.mob-tab').forEach(n=>n.classList.remove('active'));
   document.getElementById('tab-'+name).classList.add('active');
   el.classList.add('active');
+  // sync the other nav (sidebar ↔ mob-tabs)
+  const idx={'dashboard':0,'journal':1,'active':2,'subs':3,'black':4}[name];
+  if(src==='mob'){
+    document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
+  } else {
+    document.querySelectorAll('.mob-tab')[idx]?.classList.add('active');
+  }
   if(name==='journal')loadJ();
   if(name==='active')loadA();
   if(name==='subs')loadS();
