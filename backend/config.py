@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     CAMERA_ENTRY_IP: str = "192.168.15.107"
     CAMERA_EXIT_IP: str = "192.168.15.108"
     CAMERA_USER: str = "admin"
-    CAMERA_PASSWORD: str = "admin"
+    CAMERA_PASSWORD: str = "parol12345"
 
     # Barrier (controlled via camera controller)
     BARRIER_ENTRY_IP: str = "192.168.15.107"

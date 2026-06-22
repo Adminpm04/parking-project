@@ -1,4 +1,7 @@
-from fastapi import FastAPI, Depends, HTTPException, WebSocket, WebSocketDisconnect
+import logging
+logging.basicConfig(level=logging.INFO)
+
+from fastapi import FastAPI, Depends, HTTPException, WebSocket, WebSocketDisconnect, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,30 +29,91 @@ app.add_middleware(
 # WebSocket connections for real-time updates
 exit_terminal_clients: list[WebSocket] = []
 
+# Plates currently being processed for exit payment (prevents duplicate invoices)
+_exit_in_progress: set[str] = set()
+
 @app.on_event("startup")
 async def startup():
     init_db()
 
 # ─── DAHUA CAMERA WEBHOOK ────────────────────────────────────────────────────
 
-@app.post("/api/camera/entry")
-async def camera_entry(data: dict, db: Session = Depends(get_db)):
-    """Dahua camera sends plate number on vehicle detection at entry."""
-    plate = data.get("plate", "").upper().strip()
+def _log_structure(data, prefix=""):
+    """Log data structure without image content for debugging."""
+    if isinstance(data, dict):
+        for k, v in data.items():
+            if isinstance(v, str) and len(v) > 100:
+                logging.info(f"{prefix}{k}: [STRING len={len(v)}]")
+            elif isinstance(v, (dict, list)):
+                logging.info(f"{prefix}{k}:")
+                _log_structure(v, prefix + "  ")
+            else:
+                logging.info(f"{prefix}{k}: {v}")
+    elif isinstance(data, list):
+        for i, item in enumerate(data[:3]):
+            logging.info(f"{prefix}[{i}]:")
+            _log_structure(item, prefix + "  ")
 
-    # Check blacklist
+
+def _find_in_dict(data, target_keys, max_depth=6):
+    """Recursively search for any of target_keys in nested dict/list."""
+    if max_depth == 0:
+        return None
+    if isinstance(data, dict):
+        for key in target_keys:
+            val = data.get(key)
+            if val and isinstance(val, str) and 2 <= len(val) <= 20:
+                return val
+        for v in data.values():
+            if isinstance(v, (dict, list)):
+                result = _find_in_dict(v, target_keys, max_depth - 1)
+                if result:
+                    return result
+    elif isinstance(data, list):
+        for item in data:
+            result = _find_in_dict(item, target_keys, max_depth - 1)
+            if result:
+                return result
+    return None
+
+
+def extract_plate(data: dict) -> str:
+    """Extract plate number from Dahua ITSAPI V1.19 format."""
+    plate_keys = ("PlateNumber", "Plate", "plate", "LicensePlate", "AutoPlate")
+    val = _find_in_dict(data, plate_keys)
+    if val:
+        return str(val).upper().strip()
+
+    # Last resort: parse from PicName like "0300TB10-20260622094113.jpg"
+    picname = _find_in_dict(data, ("PicName",))
+    if picname and "-" in str(picname):
+        candidate = str(picname).split("-")[0]
+        if 3 <= len(candidate) <= 15:
+            return candidate.upper().strip()
+
+    return ""
+
+
+# Dahua ITSAPI heartbeat
+@app.post("/NotificationInfo/KeepAlive")
+async def itsapi_keepalive(data: dict):
+    return {"Response": "OK"}
+
+
+async def _handle_entry(plate: str, db: Session):
+    if not plate:
+        return {"Response": "OK"}
+
     blocked = db.query(Blacklist).filter(Blacklist.plate == plate).first()
     if blocked:
         return {"action": "deny", "reason": "blacklisted"}
 
-    # Check abonement
     abonement = db.query(Abonement).filter(
         Abonement.plate == plate,
         Abonement.is_active == True,
         Abonement.valid_until > datetime.utcnow()
     ).first()
 
-    # Create session
     session = ParkingSession(
         plate=plate,
         entry_time=datetime.utcnow(),
@@ -59,24 +123,20 @@ async def camera_entry(data: dict, db: Session = Depends(get_db)):
     db.add(session)
     db.commit()
 
-    # Open barrier
     await open_entry_barrier()
     return {"action": "open", "session_id": session.id}
 
 
-@app.post("/api/camera/exit")
-async def camera_exit(data: dict, db: Session = Depends(get_db)):
-    """Dahua camera sends plate number on vehicle detection at exit."""
-    plate = data.get("plate", "").upper().strip()
+async def _handle_exit(plate: str, db: Session):
+    if not plate:
+        return {"Response": "OK"}
 
-    # Find active session
     session = db.query(ParkingSession).filter(
         ParkingSession.plate == plate,
         ParkingSession.is_active == True,
     ).order_by(ParkingSession.entry_time.desc()).first()
 
     if not session:
-        # Unknown car - create session and let through
         session = ParkingSession(
             plate=plate,
             entry_time=datetime.utcnow(),
@@ -85,7 +145,6 @@ async def camera_exit(data: dict, db: Session = Depends(get_db)):
         db.add(session)
         db.commit()
 
-    # Check abonement
     abonement = db.query(Abonement).filter(
         Abonement.plate == plate,
         Abonement.is_active == True,
@@ -101,40 +160,89 @@ async def camera_exit(data: dict, db: Session = Depends(get_db)):
         await open_exit_barrier()
         return {"action": "open", "reason": "abonement"}
 
-    # Create invoice for payment
-    result = await create_invoice(plate)
-    if result["success"]:
-        session.invoice_id = result["invoice_id"]
-        session.mis_payment_id = result["mis_payment_id"]
-        session.amount = settings.JETQR_AMOUNT
-        db.commit()
+    # Deduplicate: camera sends 3 triggers per detection
+    if session.invoice_id or plate in _exit_in_progress:
+        return {"action": "wait_payment", "invoice_id": session.invoice_id}
 
-        # Notify exit terminal via WebSocket
+    _exit_in_progress.add(plate)
+    asyncio.create_task(_exit_payment_flow(plate, session.id))
+    return {"action": "processing"}
+
+
+@app.post("/api/camera/entry")
+async def camera_entry(data: dict, db: Session = Depends(get_db)):
+    plate = extract_plate(data)
+    logging.info(f"camera/entry plate='{plate}'")
+    if not plate:
+        _log_structure(data)
+    return await _handle_entry(plate, db)
+
+
+@app.post("/api/camera/exit")
+async def camera_exit(data: dict, db: Session = Depends(get_db)):
+    plate = extract_plate(data)
+    logging.info(f"camera/exit plate='{plate}'")
+    if not plate:
+        _log_structure(data)
+    return await _handle_exit(plate, db)
+
+
+# Fallback: camera sends to default /NotificationInfo/TollgateInfo path
+@app.post("/NotificationInfo/TollgateInfo")
+async def itsapi_tollgate(request: Request, data: dict, db: Session = Depends(get_db)):
+    logging.info(f"TollgateInfo from {request.client.host}: {data}")
+    plate = extract_plate(data)
+    client_ip = request.client.host
+    params = data.get("Params", {})
+    direction = str(params.get("Direction", "")).lower()
+    is_exit = client_ip == settings.CAMERA_EXIT_IP or "leave" in direction
+    if is_exit:
+        return await _handle_exit(plate, db)
+    return await _handle_entry(plate, db)
+
+
+# ─── PAYMENT POLLING ─────────────────────────────────────────────────────────
+
+async def _exit_payment_flow(plate: str, session_id: int):
+    """Create invoice and start polling — runs in background so camera gets instant response."""
+    from database import SessionLocal
+    try:
+        result = await create_invoice(plate)
+        if not result["success"]:
+            logging.error(f"Failed to create invoice for {plate}")
+            return
+
+        db = SessionLocal()
+        try:
+            session = db.query(ParkingSession).filter(ParkingSession.id == session_id).first()
+            if session:
+                session.invoice_id = result["invoice_id"]
+                session.mis_payment_id = result["mis_payment_id"]
+                session.amount = settings.JETQR_AMOUNT
+                db.commit()
+        finally:
+            db.close()
+
         await notify_exit_terminal({
             "type": "show_payment",
             "plate": plate,
             "amount": settings.JETQR_AMOUNT,
             "invoice_id": result["invoice_id"],
-            "session_id": session.id,
+            "session_id": session_id,
         })
 
-        # Start polling for payment
-        asyncio.create_task(poll_payment(session.id, result["invoice_id"]))
+        await poll_payment(session_id, result["invoice_id"])
+    finally:
+        _exit_in_progress.discard(plate)
 
-        return {"action": "wait_payment", "invoice_id": result["invoice_id"]}
-
-    return {"action": "error", "message": "Failed to create invoice"}
-
-
-# ─── PAYMENT POLLING ─────────────────────────────────────────────────────────
 
 async def poll_payment(session_id: int, invoice_id: str):
     """Poll JetQR every 2 seconds until payment confirmed."""
     from database import SessionLocal
     max_attempts = 150  # 5 minutes
 
-    for _ in range(max_attempts):
-        await asyncio.sleep(2)
+    for i in range(max_attempts):
+        await asyncio.sleep(1 if i == 0 else 2)
         result = await check_invoice(invoice_id)
 
         if result.get("paid"):
@@ -338,6 +446,35 @@ async def notify_exit_terminal(data: dict):
             dead.append(ws)
     for ws in dead:
         exit_terminal_clients.remove(ws)
+
+
+# ─── BARRIER TEST ────────────────────────────────────────────────────────────
+
+@app.get("/api/test/barrier/{direction}")
+async def test_barrier(direction: str):
+    """Test barrier open directly and return detailed result."""
+    from dahua import open_barrier
+    import httpx
+
+    ip = settings.BARRIER_ENTRY_IP if direction == "entry" else settings.BARRIER_EXIT_IP
+    results = []
+
+    endpoints = [
+        "/cgi-bin/accessControl.cgi?action=openDoor&channel=1&UserID=0",
+        "/cgi-bin/barrierControl.cgi?action=open&channel=0",
+        "/cgi-bin/gateControl.cgi?action=open",
+        "/cgi-bin/trafficBarrier.cgi?action=open",
+    ]
+
+    async with httpx.AsyncClient(verify=False, auth=httpx.DigestAuth(settings.CAMERA_USER, settings.CAMERA_PASSWORD)) as client:
+        for ep in endpoints:
+            try:
+                r = await client.get(f"https://{ip}{ep}", timeout=5)
+                results.append({"endpoint": ep, "status": r.status_code, "response": r.text[:100]})
+            except Exception as e:
+                results.append({"endpoint": ep, "error": str(e)})
+
+    return {"ip": ip, "results": results}
 
 
 # ─── QR CODE GENERATOR ───────────────────────────────────────────────────────

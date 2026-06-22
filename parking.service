@@ -1,0 +1,14 @@
+[Unit]
+Description=Parking System API
+After=network.target postgresql.service
+
+[Service]
+User=gai-2
+WorkingDirectory=/opt/parking/backend
+Environment=PATH=/opt/parking/venv/bin
+ExecStart=/opt/parking/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
