@@ -10,69 +10,188 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{width:100%;height:100%;overflow:hidden;}
-body{background:#0f0f11;color:#F5F5F5;font-family:'Manrope',system-ui,sans-serif;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-@keyframes liveBlink{0%,100%{opacity:1;}50%{opacity:.25;}}
-@keyframes pulseRing{0%{transform:scale(.7);opacity:.6;}100%{transform:scale(2.4);opacity:0;}}
-@keyframes floatBlob{0%,100%{transform:translate(0,0) scale(1);}50%{transform:translate(26px,-32px) scale(1.08);}}
-@keyframes popIn{0%{transform:scale(.4);opacity:0;}70%{transform:scale(1.08);}100%{transform:scale(1);opacity:1;}}
-@keyframes qrGlow{0%,100%{box-shadow:0 0 0 1px rgba(203,58,82,.45),0 30px 60px -22px rgba(0,0,0,.5);}50%{box-shadow:0 0 0 1px rgba(203,58,82,.8),0 26px 80px -14px rgba(203,58,82,.3);}}
-@keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-:root{
-  --bg:#0f0f11;--surface:rgba(255,255,255,0.05);--surface-2:rgba(255,255,255,0.085);
-  --border:rgba(255,255,255,0.10);--text:#F5F5F5;--text-2:#a4a4ac;--text-3:#6b6b73;
-  --accent:#CB3A52;--accent-2:#8B253B;--accent-soft:rgba(203,58,82,0.17);--accent-line:rgba(203,58,82,0.45);
-  --shadow:0 26px 64px -26px rgba(0,0,0,.78);
+body{
+  background:#0f0f11;color:#F5F5F5;
+  font-family:'Manrope',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  display:flex;align-items:center;justify-content:center;
 }
-.blob{position:fixed;border-radius:50%;filter:blur(40px);pointer-events:none;z-index:0;}
-.blob-1{top:-180px;right:-120px;width:560px;height:560px;background:radial-gradient(circle,var(--accent-2),transparent 68%);opacity:.4;animation:floatBlob 14s ease-in-out infinite;}
-.blob-2{bottom:-220px;left:-140px;width:520px;height:520px;background:radial-gradient(circle,var(--accent-2),transparent 70%);opacity:.3;animation:floatBlob 18s ease-in-out infinite reverse;}
-.grid-bg{position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:46px 46px;opacity:.5;pointer-events:none;z-index:0;}
-.screen{position:relative;z-index:1;width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
 
-/* IDLE */
-#stateIdle{text-align:center;animation:fadeIn .5s ease;}
-.pulse-wrap{position:relative;width:130px;height:130px;margin:0 auto 34px;}
+/* ── Tokens ── */
+:root{
+  --accent:#CB3A52;--accent-2:#8B253B;
+  --accent-soft:rgba(203,58,82,.17);--accent-line:rgba(203,58,82,.45);
+  --surface:rgba(255,255,255,.05);--border:rgba(255,255,255,.10);
+  --text:#F5F5F5;--text-2:#a4a4ac;--text-3:#6b6b73;
+  --r-card:clamp(14px,2.5vmin,24px);
+  --grid:clamp(28px,4.5vmin,46px);
+}
+
+/* ── Animations ── */
+@keyframes pulseRing{0%{transform:scale(.7);opacity:.6}100%{transform:scale(2.4);opacity:0}}
+@keyframes floatBlob{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(26px,-32px) scale(1.08)}}
+@keyframes popIn{0%{transform:scale(.4);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+@keyframes qrBreath{0%,100%{box-shadow:0 0 0 1px rgba(203,58,82,.45),0 28px 56px -18px rgba(0,0,0,.55)}50%{box-shadow:0 0 0 2px rgba(203,58,82,.8),0 22px 72px -10px rgba(203,58,82,.3)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.22}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideL{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideR{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideD{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Background ── */
+.blob{position:fixed;border-radius:50%;filter:blur(clamp(30px,5vmin,50px));pointer-events:none;z-index:0;}
+.blob-1{top:-14%;right:-8%;width:min(580px,55vmin);height:min(580px,55vmin);
+  background:radial-gradient(circle,var(--accent-2),transparent 68%);opacity:.42;
+  animation:floatBlob 14s ease-in-out infinite;}
+.blob-2{bottom:-18%;left:-10%;width:min(520px,50vmin);height:min(520px,50vmin);
+  background:radial-gradient(circle,var(--accent-2),transparent 70%);opacity:.28;
+  animation:floatBlob 18s ease-in-out infinite reverse;}
+.grid{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(var(--border) 1px,transparent 1px),
+                   linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size:var(--grid) var(--grid);opacity:.45;}
+
+/* ── Wrapper ── */
+.screen{position:relative;z-index:1;width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  padding:clamp(14px,3vmin,40px);}
+
+/* ════════════════════════════════
+   IDLE
+   ════════════════════════════════ */
+#stateIdle{text-align:center;animation:fadeUp .6s ease;}
+.pulse-wrap{position:relative;margin:0 auto clamp(18px,3.5vh,32px);
+  width:clamp(76px,11vmin,130px);height:clamp(76px,11vmin,130px);}
 .pulse-ring{position:absolute;inset:0;border-radius:50%;border:2px solid var(--accent-line);}
 .pulse-ring:nth-child(1){animation:pulseRing 2.4s ease-out infinite;}
 .pulse-ring:nth-child(2){animation:pulseRing 2.4s ease-out infinite 1.2s;}
-.pulse-core{position:absolute;inset:30px;border-radius:50%;background:linear-gradient(140deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;box-shadow:0 12px 30px -8px var(--accent-line);}
-.idle-title{font:700 72px 'Space Grotesk',sans-serif;letter-spacing:.04em;color:var(--text);}
-.idle-sub{font:500 24px Manrope;color:var(--text-2);margin-top:16px;}
-.idle-hint{font:500 16px Manrope;color:var(--text-3);margin-top:36px;}
+.pulse-core{position:absolute;inset:23%;border-radius:50%;
+  background:linear-gradient(140deg,var(--accent),var(--accent-2));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 10px 28px -8px var(--accent-line);}
+.pulse-core svg{width:clamp(22px,4.5vmin,42px);height:clamp(22px,4.5vmin,42px);}
+.idle-title{font:700 clamp(30px,6.5vw,72px)/'Space Grotesk',sans-serif;
+  font-family:'Space Grotesk',sans-serif;font-weight:700;
+  font-size:clamp(30px,6.5vw,72px);
+  letter-spacing:.04em;color:var(--text);}
+.idle-sub{font-size:clamp(13px,2.4vw,24px);font-weight:500;
+  color:var(--text-2);margin-top:clamp(8px,1.5vh,16px);}
+.idle-hint{font-size:clamp(11px,1.4vw,15px);font-weight:500;
+  color:var(--text-3);margin-top:clamp(16px,3vh,34px);}
 
-/* PAYMENT */
-#statePay{display:flex;align-items:center;gap:64px;animation:fadeIn .5s ease;}
-.pay-left{text-align:left;}
-.pay-label{font:600 14px Manrope;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:14px;}
-.pay-amount{font:700 96px 'Space Grotesk',sans-serif;letter-spacing:-.02em;color:var(--accent);line-height:.9;}
-.pay-amount span{font-size:36px;color:var(--text-2);}
-.pay-plate{display:inline-block;font:700 36px 'Space Grotesk',sans-serif;letter-spacing:.12em;color:var(--text);padding:14px 30px;border-radius:16px;border:1px solid var(--border);background:var(--surface);margin:32px 0 26px;}
-.pay-inst{font:500 18px Manrope;color:var(--text-2);line-height:1.8;max-width:320px;}
+/* ════════════════════════════════
+   PAYMENT — shared
+   ════════════════════════════════ */
+#statePay{display:flex;align-items:center;justify-content:center;
+  width:100%;max-width:1120px;gap:clamp(28px,5vw,88px);}
+
+.pay-label{font-size:clamp(9px,1.1vw,13px);font-weight:600;
+  letter-spacing:.15em;text-transform:uppercase;color:var(--text-3);
+  margin-bottom:clamp(8px,1.4vh,14px);}
+
+.pay-amount{font-family:'Space Grotesk',sans-serif;font-weight:700;
+  font-size:clamp(52px,9.5vw,100px);
+  letter-spacing:-.025em;color:var(--accent);line-height:.88;}
+.pay-amount span{font-size:clamp(20px,3.2vw,34px);color:var(--text-2);}
+
+.pay-plate{
+  display:inline-block;
+  font-family:'Space Grotesk',sans-serif;font-weight:700;
+  font-size:clamp(17px,3.2vw,36px);letter-spacing:.12em;color:var(--text);
+  padding:clamp(7px,1.2vh,13px) clamp(14px,2.6vw,28px);
+  border-radius:clamp(10px,1.8vmin,16px);
+  border:1px solid var(--border);background:var(--surface);
+  margin:clamp(14px,2.5vh,30px) 0 clamp(10px,2vh,24px);}
+
+.pay-inst{font-size:clamp(13px,1.7vw,18px);font-weight:500;
+  color:var(--text-2);line-height:1.75;}
 .pay-inst strong{color:var(--accent);font-weight:700;}
-.qr-wrap{padding:24px;border-radius:24px;background:#fff;animation:qrGlow 2.6s ease-in-out infinite;}
 
-/* SUCCESS */
-#stateSuccess{text-align:center;animation:fadeIn .5s ease;}
-.success-circle{width:150px;height:150px;margin:0 auto 30px;border-radius:50%;background:rgba(70,181,118,.16);display:flex;align-items:center;justify-content:center;animation:popIn .5s cubic-bezier(.18,.89,.32,1.28);}
-.success-title{font:700 64px 'Space Grotesk',sans-serif;color:#46b576;}
-.success-plate{display:inline-block;font:700 28px 'Space Grotesk',sans-serif;letter-spacing:.1em;color:var(--text);margin-top:16px;}
-.success-hint{font:600 22px Manrope;color:var(--text-2);margin-top:30px;animation:liveBlink 1s infinite;}
+.qr-col{display:flex;flex-direction:column;align-items:center;
+  gap:clamp(10px,1.8vh,20px);}
+.qr-title{font-family:'Space Grotesk',sans-serif;font-weight:700;
+  font-size:clamp(15px,2.4vw,28px);letter-spacing:.05em;color:var(--accent);}
+.qr-wrap{padding:clamp(12px,2vmin,24px);border-radius:var(--r-card);
+  background:#fff;animation:qrBreath 2.6s ease-in-out infinite;}
+.qr-wrap img{display:block;border-radius:4px;}
+
+/* ── LANDSCAPE default ── */
+.pay-left{animation:slideL .48s ease;}
+.pay-left .pay-inst{max-width:clamp(200px,28vw,340px);}
+.qr-col{animation:slideR .48s ease;}
+.qr-wrap img{width:min(280px,26vw);height:min(280px,26vw);}
+
+/* ── PORTRAIT / NARROW ── */
+@media (orientation:portrait),(max-width:780px){
+  #statePay{flex-direction:column;gap:clamp(12px,2.5vh,32px);}
+  .pay-left{text-align:center;animation:fadeUp .45s ease;}
+  .pay-left .pay-inst{max-width:min(100%,440px);text-align:center;}
+  .qr-col{animation:slideD .45s ease 80ms both;}
+  .qr-wrap img{width:min(280px,58vw);height:min(280px,58vw);}
+}
+
+/* ── Extra-small (< 400px) ── */
+@media (max-width:399px){
+  .qr-wrap{padding:10px;}
+  .qr-wrap img{width:min(240px,58vw);height:min(240px,58vw);}
+}
+
+/* ════════════════════════════════
+   ERROR
+   ════════════════════════════════ */
+#stateError{text-align:center;animation:fadeUp .5s ease;}
+.error-ring{
+  width:clamp(86px,13vmin,150px);height:clamp(86px,13vmin,150px);
+  margin:0 auto clamp(14px,2.5vh,28px);border-radius:50%;
+  background:rgba(203,58,82,.16);
+  display:flex;align-items:center;justify-content:center;
+  animation:popIn .5s cubic-bezier(.18,.89,.32,1.28);}
+.error-ring svg{width:clamp(40px,7vmin,68px);height:clamp(40px,7vmin,68px);}
+.error-title{font-family:'Space Grotesk',sans-serif;font-weight:700;
+  font-size:clamp(28px,5vw,52px);color:var(--accent);}
+.error-msg{font-size:clamp(13px,2vw,18px);font-weight:500;
+  color:var(--text-2);margin-top:clamp(10px,2vh,18px);max-width:340px;}
+
+/* ════════════════════════════════
+   SUCCESS
+   ════════════════════════════════ */
+#stateSuccess{text-align:center;animation:fadeUp .5s ease;}
+.success-ring{
+  width:clamp(86px,13vmin,150px);height:clamp(86px,13vmin,150px);
+  margin:0 auto clamp(14px,2.5vh,28px);border-radius:50%;
+  background:rgba(70,181,118,.14);
+  display:flex;align-items:center;justify-content:center;
+  animation:popIn .5s cubic-bezier(.18,.89,.32,1.28);}
+.success-ring svg{width:clamp(40px,7vmin,68px);height:clamp(40px,7vmin,68px);}
+.success-title{font-family:'Space Grotesk',sans-serif;font-weight:700;
+  font-size:clamp(34px,6.5vw,64px);color:#46b576;}
+.success-plate{
+  display:inline-block;
+  font-family:'Space Grotesk',sans-serif;font-weight:700;
+  font-size:clamp(14px,2.8vw,26px);letter-spacing:.1em;color:var(--text);
+  padding:clamp(7px,1.2vh,11px) clamp(18px,3vw,30px);
+  border-radius:12px;background:var(--surface);border:1px solid var(--border);
+  margin-top:clamp(10px,2vh,18px);}
+.success-hint{font-size:clamp(13px,2vw,20px);font-weight:600;
+  color:var(--text-2);margin-top:clamp(14px,2.5vh,28px);animation:blink 1.1s infinite;}
 </style>
 </head>
 <body>
 <div class="blob blob-1"></div>
 <div class="blob blob-2"></div>
-<div class="grid-bg"></div>
+<div class="grid"></div>
 
 <div class="screen">
 
-  <!-- IDLE STATE -->
+  <!-- ─── IDLE ─── -->
   <div id="stateIdle">
     <div class="pulse-wrap">
       <div class="pulse-ring"></div>
       <div class="pulse-ring"></div>
       <div class="pulse-core">
-        <svg width="44" height="44" viewBox="0 0 24 24" fill="none"><path d="M6 20V5a1 1 0 0 1 1-1h6.5a5 5 0 0 1 0 10H8" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M6 20V5a1 1 0 0 1 1-1h6.5a5 5 0 0 1 0 10H8" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </div>
     </div>
     <div class="idle-title">ПАРКОВКА</div>
@@ -80,23 +199,41 @@ body{background:#0f0f11;color:#F5F5F5;font-family:'Manrope',system-ui,sans-serif
     <div class="idle-hint">Ожидание автомобиля…</div>
   </div>
 
-  <!-- PAYMENT STATE -->
+  <!-- ─── PAYMENT ─── -->
   <div id="statePay" style="display:none;">
     <div class="pay-left">
       <div class="pay-label">Сумма к оплате</div>
       <div class="pay-amount" id="payAmount">5 <span>сомони</span></div>
       <div class="pay-plate" id="payPlate">— — —</div>
-      <div class="pay-inst">Откройте <strong>Alif Mobi</strong> → сканируйте QR → нажмите <strong>Оплатить</strong></div>
+      <div class="pay-inst">
+        Откройте приложение банка → сканируйте QR → нажмите <strong>Оплатить</strong>
+      </div>
     </div>
-    <div class="qr-wrap">
-      <img id="qrImg" src="" width="280" height="280" alt="QR">
+    <div class="qr-col">
+      <div class="qr-title">Единый QR-код</div>
+      <div class="qr-wrap">
+        <img src="/static/static_qr.png" alt="QR-код для оплаты">
+      </div>
     </div>
   </div>
 
-  <!-- SUCCESS STATE -->
+  <!-- ─── ERROR ─── -->
+  <div id="stateError" style="display:none;">
+    <div class="error-ring">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#CB3A52" stroke-width="2.6">
+        <path d="M18 6 6 18M6 6l12 12" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="error-title" id="errorTitle">Ошибка оплаты</div>
+    <div class="error-msg" id="errorMsg">Обратитесь к охраннику для ручного открытия шлагбаума</div>
+  </div>
+
+  <!-- ─── SUCCESS ─── -->
   <div id="stateSuccess" style="display:none;">
-    <div class="success-circle">
-      <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="#46b576" stroke-width="2.6"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div class="success-ring">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#46b576" stroke-width="2.6">
+        <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
     </div>
     <div class="success-title">Оплачено!</div>
     <div class="success-plate" id="successPlate"></div>
@@ -106,41 +243,42 @@ body{background:#0f0f11;color:#F5F5F5;font-family:'Manrope',system-ui,sans-serif
 </div>
 
 <script>
-let currentState = 'idle';
 let idleTimer = null;
-
 function setState(name) {
-  currentState = name;
-  document.getElementById('stateIdle').style.display = name === 'idle' ? '' : 'none';
-  document.getElementById('statePay').style.display = name === 'pay' ? 'flex' : 'none';
-  document.getElementById('stateSuccess').style.display = name === 'success' ? '' : 'none';
+  document.getElementById('stateIdle').style.display    = name === 'idle'    ? ''     : 'none';
+  document.getElementById('statePay').style.display     = name === 'pay'     ? 'flex' : 'none';
+  document.getElementById('stateError').style.display   = name === 'error'   ? ''     : 'none';
+  document.getElementById('stateSuccess').style.display = name === 'success' ? ''     : 'none';
   if (idleTimer) clearTimeout(idleTimer);
-  if (name === 'success') {
-    idleTimer = setTimeout(() => setState('idle'), 6000);
-  }
+  if (name === 'success') idleTimer = setTimeout(() => setState('idle'), 6000);
+  if (name === 'error')   idleTimer = setTimeout(() => setState('idle'), 15000);
 }
-
-function showPayment(data) {
-  document.getElementById('payAmount').innerHTML = data.amount + ' <span>сомони</span>';
-  document.getElementById('payPlate').textContent = data.plate;
-  document.getElementById('qrImg').src = '/api/qr/' + data.invoice_id;
+function showPayment(d) {
+  document.getElementById('payAmount').innerHTML = d.amount + ' <span>сомони</span>';
+  document.getElementById('payPlate').textContent = d.plate;
   setState('pay');
 }
-
-function showSuccess(data) {
-  document.getElementById('successPlate').textContent = data.plate || '';
+function showSuccess(d) {
+  document.getElementById('successPlate').textContent = d.plate || '';
   setState('success');
 }
-
-// WebSocket
+if (new URLSearchParams(location.search).get('test') === '1') showPayment({amount: 5, plate: 'TEST-0000'});
 function connect() {
   const ws = new WebSocket('ws://' + location.host + '/ws/exit-terminal');
   ws.onmessage = e => {
     try {
       const d = JSON.parse(e.data);
-      if (d.type === 'show_payment') showPayment(d);
+      if (d.type === 'show_payment')    showPayment(d);
       if (d.type === 'payment_success') showSuccess(d);
-    } catch(err) {}
+      if (d.type === 'payment_timeout') setState('idle');
+      if (d.type === 'payment_error')   setState('error');
+      if (d.type === 'partial_payment') {
+        document.getElementById('errorTitle').textContent = 'Недостаточная сумма';
+        document.getElementById('errorMsg').textContent =
+          'Оплачено ' + d.paid + ' сомони из ' + d.required + '. Обратитесь к охраннику.';
+        setState('error');
+      }
+    } catch (_) {}
   };
   ws.onclose = () => setTimeout(connect, 2000);
 }

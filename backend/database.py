@@ -5,7 +5,14 @@ from datetime import datetime
 import enum
 from config import settings
 
-engine = create_engine(settings.DATABASE_URL)
+engine = create_engine(
+    settings.DATABASE_URL,
+    pool_size=10,
+    max_overflow=20,
+    pool_pre_ping=True,
+    pool_recycle=1800,
+    connect_args={"options": "-c statement_timeout=5000"},
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -22,32 +29,32 @@ class ParkingSession(Base):
     __tablename__ = "parking_sessions"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    plate = Column(String(20), nullable=True)
-    entry_time = Column(DateTime, default=datetime.utcnow)
+    plate = Column(String(20), nullable=True, index=True)
+    entry_time = Column(DateTime, default=datetime.utcnow, index=True)
     exit_time = Column(DateTime, nullable=True)
     entry_type = Column(Enum(OpenType), default=OpenType.auto)
     exit_type = Column(Enum(OpenType), nullable=True)
     payment_status = Column(Enum(PaymentStatus), default=PaymentStatus.pending)
     amount = Column(Float, nullable=True)
-    invoice_id = Column(String(100), nullable=True)
+    invoice_id = Column(String(100), nullable=True, index=True)
     mis_payment_id = Column(String(100), nullable=True)
     phone_number = Column(String(20), nullable=True)
-    is_active = Column(Boolean, default=True)
+    is_active = Column(Boolean, default=True, index=True)
 
 class Abonement(Base):
     __tablename__ = "abonements"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    plate = Column(String(20), unique=True, nullable=False)
+    plate = Column(String(20), unique=True, nullable=False, index=True)
     owner_name = Column(String(100), nullable=True)
     valid_until = Column(DateTime, nullable=False)
-    is_active = Column(Boolean, default=True)
+    is_active = Column(Boolean, default=True, index=True)
 
 class Blacklist(Base):
     __tablename__ = "blacklist"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    plate = Column(String(20), unique=True, nullable=False)
+    plate = Column(String(20), unique=True, nullable=False, index=True)
     reason = Column(String(200), nullable=True)
     added_at = Column(DateTime, default=datetime.utcnow)
 
